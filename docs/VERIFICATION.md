@@ -15,7 +15,7 @@ The 100-page fixture was extracted with PDF.js, chunked, and processed into real
 
 `npm audit` reports **9 findings: 4 high, 4 moderate, 1 low; no critical findings**. Eight are Angular 19 packages, which remain at the requested major version (19.2.25 core; Material 19.2.19). One low finding is a transitive Babel 7 dependency in the Angular compiler toolchain. Angular 19 is outside support. Some advisories concern SSR features this client-rendered POC does not use, but the version findings are not waived. Do not treat the dependency set as production-cleared.
 
-Live OpenAI embeddings, answer quality, account access, billing, model availability and latency were **not tested** because no API key was supplied.
+A live OpenAI embedding preflight was attempted on 30 October 2026 using the supplied key. OpenAI returned HTTP 429 with `credit_balance_exhausted` / `insufficient_quota`. No embedding was generated. Live document processing, semantic relevance, answer quality and provider latency remain unverified until usable API credits are available. The supplied key was not saved in project files.
 
 ## Live-key checklist
 
