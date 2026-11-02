@@ -16,7 +16,7 @@ Update these values in `.env`:
 
 ```dotenv
 MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
+MYSQL_PORT=3310
 MYSQL_DATABASE=legal_assistant
 MYSQL_USER=your_local_user
 MYSQL_PASSWORD=your_local_password
@@ -30,6 +30,19 @@ npm run db:migrate
 npm run build
 npm start
 ```
+
+Run commands from the project root (the folder containing `package.json`). MySQL must be running before migrations or application startup. This project's `.env.example` uses **3310**; if your MySQL installation listens on **3306**, set `MYSQL_PORT=3306` in `.env` instead.
+
+On this Windows workspace, the project-local MySQL instance stores its data in `storage/mysql`. After restarting Windows, start it with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-local-mysql.ps1
+npm start
+```
+
+The helper requires the already initialized local data directory and MySQL Server 8.0 installed under `C:\Program Files\MySQL`. It does not install MySQL or initialize a new database. Local administrator credentials are in the ignored `storage/mysql-admin.json`; keep that file private.
+
+`ECONNREFUSED 127.0.0.1:3310` means no database server accepted the connection at that address. Check that MySQL is running on the configured port. Node 25 is outside this project's declared engine range; use Node 22.x for the supported build environment.
 
 Open **http://localhost:3003**. The server binds to localhost. Stop with Ctrl+C. Rebuild after editing source files. `npm run dev` builds and starts the same application.
 

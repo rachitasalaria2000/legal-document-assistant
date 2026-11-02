@@ -8,11 +8,33 @@ import { answerQuestion } from "./agent.js";
 import { createApp } from "./app.js";
 await mkdir(config.uploadDir, { recursive: true });
 const pool = createPool();
-await pool.query("SELECT 1");
-// In-process jobs cannot survive a restart: expose a retryable status instead of remaining stuck.
-await pool.execute(
-  "UPDATE documents SET status='failed',error_message='Server restarted during processing. Please retry.' WHERE status IN ('queued','processing')",
-);
+try {
+  await pool.query("SELECT 1");
+  // In-process jobs cannot survive a restart: expose a retryable status instead of remaining stuck.
+  await pool.execute(
+    "UPDATE documents SET status='failed',error_message='Server restarted during processing. Please retry.' WHERE status IN ('queued','processing')",
+  );
+} catch (error) {
+  const code = (error as { code?: string }).code ?? "UNKNOWN";
+  console.error(
+    `MySQL startup failed (${code}) at ${config.MYSQL_HOST}:${config.MYSQL_PORT}, database ${config.MYSQL_DATABASE}.`,
+  );
+  if (code === "ECONNREFUSED") {
+    console.error(
+      "Start MySQL and check MYSQL_HOST / MYSQL_PORT in .env. See README.md for local startup instructions.",
+    );
+  } else if (code === "ER_ACCESS_DENIED_ERROR") {
+    console.error("Check MYSQL_USER / MYSQL_PASSWORD and database grants.");
+  } else if (code === "ER_BAD_DB_ERROR" || code === "ER_NO_SUCH_TABLE") {
+    console.error(
+      "Create the configured database, then run npm run db:migrate from the project root.",
+    );
+  } else {
+    console.error("Check the MySQL server logs and database configuration.");
+  }
+  await pool.end();
+  process.exit(1);
+}
 const store = new MysqlStore(pool);
 const processor = new Processor(store, createEmbeddings);
 const retrieval = new Retriever(store, createEmbeddings);
